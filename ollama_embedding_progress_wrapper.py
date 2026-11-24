@@ -11,15 +11,19 @@ from tqdm import tqdm
 
 
 class ProgressOllamaEmbeddings(OllamaEmbeddings):
-    chunk_size: int = 32  # Adjust based on your Ollama server capacity
+    chunk_size: int = 32
+    show_progress: bool = True  # Added flag to control visibility toggle
 
     def embed_documents(self, texts: list[str]) -> list[list[float]]:
         embeddings = []
 
-        # Process in batches to leverage Ollama's native array handling
-        for i in tqdm(range(0, len(texts), self.chunk_size), desc="Embedding Batches"):
+        # Use the class flag to completely toggle the progress bar
+        iterator = range(0, len(texts), self.chunk_size)
+        if self.show_progress:
+            iterator = tqdm(iterator, desc="Embedding Batches")
+
+        for i in iterator:
             batch = texts[i: i + self.chunk_size]
-            # Calls the base class embed_documents which natively handles lists
             batch_embeddings = super().embed_documents(batch)
             embeddings.extend(batch_embeddings)
 
